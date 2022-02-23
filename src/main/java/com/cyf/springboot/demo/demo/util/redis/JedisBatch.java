@@ -2,6 +2,7 @@ package com.cyf.springboot.demo.demo.util.redis;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.Pipeline;
 
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,7 @@ public class JedisBatch {
      * @param keys
      * @return
      */
-    Map<String,String> batchGetByPipeline(List<String> keys){
+    public List<String> batchGetByPipeline(List<String> keys){
         /**
          * cluster中如果计算出来不在同一个槽位不允许使用mget，mset等批量操作命令
          * 需要批量操作需要调用jediscluster中代码计算每一个key对应的槽位，根据槽位计算node，再通过
@@ -29,6 +30,11 @@ public class JedisBatch {
          * github中找代码
          * mo-service中已实现
          * jedisCluster.mget("a");*/
-        return null;
+        return (List<String>)(List)(new JedisClusterPipelineCommand(jedisCluster){
+            @Override
+            public void excute(Pipeline pipeline,String key){
+                pipeline.get(key);
+            }
+        }).run(keys);
     }
 }
